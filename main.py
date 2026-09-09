@@ -10,7 +10,7 @@ from fpdf.enums import XPos, YPos
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
-# ----------------- FLASK WEB SERVER (FOR RENDER PORT BINDING) -----------------
+# ----------------- રસપ્રદ વેબ સર્વર (RENDER PORT BINDING માટે) -----------------
 app_flask = Flask(__name__)
 
 @app_flask.route('/')
@@ -21,7 +21,7 @@ def run_flask():
     port = int(os.getenv("PORT", 10000))
     app_flask.run(host="0.0.0.0", port=port)
 
-# ----------------- CONFIGURATION & DB CONNECTION -----------------
+# ----------------- કન્ફિગરેશન અને ડેટાબેઝ કનેક્શન -----------------
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL", "postgres://user:password@localhost:5432/dbname")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "123456789"))  # તમારો ટેલિગ્રામ એડમિન આઈડી
@@ -57,7 +57,7 @@ def init_db():
         )
     ''')
     
-    # Coupons Table (Ensuring coupon_id is the primary/correct column)
+    # Coupons Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS coupons (
             coupon_id TEXT PRIMARY KEY,
@@ -68,7 +68,7 @@ def init_db():
         )
     ''')
 
-    # FIX: Safety ALTER statements to ensure columns exist even if tables were already created previously
+    # સેફ્ટી માટે ALTER ક્વેરીઝ (કોઈપણ કૉલમ ખૂટતી હોય તો ઓટોમેટિક ઉમેરાઈ જશે)
     cur.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS phone TEXT;")
     cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS coupon_id TEXT;")
     cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS user_id BIGINT;")
@@ -81,7 +81,7 @@ def init_db():
 
 init_db()
 
-# ----------------- LOCALIZATION STRINGS -----------------
+# ----------------- ભાષા અને સંદેશાઓ (LOCALIZATION STRINGS) -----------------
 LANG = {
     'gu': {
         'welcome': "નમસ્કાર! આપનું સ્વાગત છે. કૃપા કરીને તમારી ભાષા પસંદ કરો:",
@@ -94,9 +94,10 @@ LANG = {
         'btn_coupons': "🎟 માય કૂપન્સ & ડ્રો ઈનામો",
         'btn_ref': "👥 રેફરલ લિંક",
         'limit_exceeded': "⚠️ તમે આ મોબાઈલ નંબરથી મહત્તમ ૨૦ પીડીએફ ખરીદવાની મર્યાદા પૂરી કરી દીધી છે.",
-        'pay_text': "🔗 પેમેન્ટ લિંક (₹50): [અહીં ક્લિક કરો]\nપેમેન્ટ કર્યા પછી નીચેનું બટન દબાવો:",
-        'btn_pay': "🔗 પેમેન્ટ લિંક ખોલો",
+        'pay_text': "🔗 પેમેન્ટ લિંક (₹50):\nકૃપા કરીને નીચે આપેલ બટન પર ક્લિક કરીને ₹૫૦ નું પેમેન્ટ પૂરું કરો, ત્યારબાદ જ 'પેમેન્ટ સ્ટેટસ તપાસો' બટન દબાવો.",
+        'btn_pay': "🔗 પેમેન્ટ લિંક ખોલો (Razorpay)",
         'btn_check': "🔄 પેમેન્ટ સ્ટેટસ તપાસો",
+        'pay_pending': "⏳ તમારું પેમેન્ટ હજુ સુધી વેરિફાઈ થયું નથી. જો તમે પેમેન્ટ કરી દીધું હોય, તો થોડીવાર પછી ફરીથી 'પેમેન્ટ સ્ટેટસ તપાસો' બટન દબાવો.",
         'pay_success': "🎉 અભિનંદન! તમારું પેમેન્ટ સફળ થઈ ગયું છે. તમારી પ્રોફેશનલ પીડીએફ નીચે મુજબ છે:",
         'coupon_msg': "🎟 તમારો યુનિક કૂપન નંબર: `{}`\n\n⚠️ **ખાસ નોંધ:** કૃપા કરીને આ નંબર નોંધી રાખો અથવા સ્ક્રીનશોટ લો. લકી ડ્રો વખતે આ જ માન્ય રહેશે!",
         'wallet_info': "💳 તમારું વોલેટ બેલેન્સ: ₹{}\nસફળ રેફરલ્સ: {}\n\n(મિનિમમ ₹૫૦ થયા પછી UPI દ્વારા ઉપાડી શકાય છે.)",
@@ -116,9 +117,10 @@ LANG = {
         'btn_coupons': "🎟 My Coupons & Prizes",
         'btn_ref': "👥 Referral Link",
         'limit_exceeded': "⚠️ You have reached the maximum limit of 20 PDF purchases for this mobile number.",
-        'pay_text': "🔗 Payment Link (₹50): [Click Here]\nClick the button below after payment:",
-        'btn_pay': "🔗 Open Payment Link",
+        'pay_text': "🔗 Payment Link (₹50):\nPlease complete the payment of ₹50 using the button below, then click 'Check Payment Status'.",
+        'btn_pay': "🔗 Open Payment Link (Razorpay)",
         'btn_check': "🔄 Check Payment Status",
+        'pay_pending': "⏳ Your payment is not verified yet. If you have completed the payment, please try checking again after a moment.",
         'pay_success': "🎉 Congratulations! Your payment was successful. Here is your professional PDF:",
         'coupon_msg': "🎟 Your Unique Coupon Number: `{}`\n\n⚠️ **Important Note:** Please save this number or take a screenshot. This will be valid during the lucky draw!",
         'wallet_info': "💳 Your Wallet Balance: ₹{}\nSuccessful Referrals: {}\n\n(Withdrawals available at minimum ₹50 via UPI.)",
@@ -139,7 +141,7 @@ def get_text(user_id, key):
     lang = res[0] if res and res[0] in ['gu', 'en'] else 'gu'
     return LANG[lang].get(key, LANG['gu'][key])
 
-# ----------------- PROFESSIONAL PDF GENERATOR -----------------
+# ----------------- પ્રોફેશનલ પીડીએફ જનરેટર -----------------
 class ProfessionalPDF(FPDF):
     def __init__(self):
         super().__init__(orientation='P', unit='mm', format='A4')
@@ -264,7 +266,6 @@ def generate_career_pdf(coupon_code):
 
     pdf.add_page()
     
-    # Hero header
     x = pdf.MARGIN
     y = pdf.get_y()
     w = pdf.CONTENT_W
@@ -281,7 +282,6 @@ def generate_career_pdf(coupon_code):
     pdf.set_text_color(225, 232, 249)
     pdf.multi_cell(w - 10, 5.3, "ધોરણ ૧૦ અને ૧૨ પછી શ્રેષ્ઠ પ્રવાહ પસંદગી, ઉચ્ચ અભ્યાસ અને સ્પર્ધાત્મક પરીક્ષાઓની A to Z માર્ગદર્શિકા", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-    # Pills
     pill_y = y + 25.5
     labels = ["વિશેષ ડિજિટલ એડિશન", f"કૂપન: {coupon_code}"]
     pill_widths = [33, 47]
@@ -328,7 +328,7 @@ def generate_career_pdf(coupon_code):
     buffer.seek(0)
     return buffer
 
-# ----------------- BOT HANDLERS -----------------
+# ----------------- બોટ હેન્ડલર્સ -----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     args = context.args
@@ -465,8 +465,11 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         cur.close()
         conn.close()
 
+        # સાચી Razorpay Payment Page લિંક અહીં મુકો (દા.ત. https://rzp.io/l/YOUR_PAGE)
+        payment_url = "https://rzp.io/l/your_payment_link"
+
         keyboard = [
-            [InlineKeyboardButton(get_text(user_id, 'btn_pay'), url="https://rzp.io/l/your_payment_link")],
+            [InlineKeyboardButton(get_text(user_id, 'btn_pay'), url=payment_url)],
             [InlineKeyboardButton(get_text(user_id, 'btn_check'), callback_data=f"check_{order_id}")]
         ]
         await query.message.reply_text(get_text(user_id, 'pay_text'), reply_markup=InlineKeyboardMarkup(keyboard))
@@ -476,23 +479,39 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("UPDATE orders SET status = 'paid' WHERE order_id = %s", (order_id,))
+        # ઓર્ડરનું વર્તમાન સ્ટેટસ તપાસો
+        cur.execute("SELECT status FROM orders WHERE order_id = %s", (order_id,))
+        order_res = cur.fetchone()
         
-        # Give ₹10 to referrer
+        if not order_res or order_res[0] != 'paid':
+            # -----------------------------------------------------------------
+            # મહત્વપૂર્ણ સુધારો: વાસ્તવિક સ્થિતિમાં અહીં Razorpay API અથવા Webhook દ્વારા 
+            # પેમેન્ટ ખરેખર થયું છે કે નહીં તે વેરિફાઈ કરવું પડે. 
+            # જો તમે API દ્વારા વેરિફાઈ કરતા હોવ અને પેમેન્ટ બાકી હોય તો નીચે મુજબ 
+            # 'pay_pending' મોકલી શકાય:
+            # -----------------------------------------------------------------
+            
+            # હાલ પૂરતું સુરક્ષા માટે જ્યાં સુધી વાસ્તવિક પેમેન્ટ કન્ફર્મ ન થાય 
+            # ત્યાં સુધી પેન્ડિંગ મેસેજ બતાવવા માટેનું લોજીક:
+            cur.close()
+            conn.close()
+            await query.message.reply_text(get_text(user_id, 'pay_pending'))
+            return
+
+        # જો પેમેન્ટ 'paid' હોય તો જ આગળ વધશે
+        # રેફરલ બોનસ અને કૂપન જનરેશન
         cur.execute("SELECT referred_by FROM users WHERE user_id = %s", (user_id,))
         ref_res = cur.fetchone()
         if ref_res and ref_res[0]:
             referrer_id = ref_res[0]
             cur.execute("UPDATE users SET wallet_balance = wallet_balance + 10, referral_count = referral_count + 1 WHERE user_id = %s", (referrer_id,))
 
-        # Generate Unique Free Coupon
         coupon_code = "EDU-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         cur.execute("INSERT INTO coupons (coupon_id, user_id, phone, order_id) VALUES (%s, %s, %s, %s)", (coupon_code, user_id, phone, order_id))
         conn.commit()
         cur.close()
         conn.close()
 
-        # Generate Professional Career PDF with Unique Coupon
         pdf_file = generate_career_pdf(coupon_code)
         
         await query.message.reply_text(get_text(user_id, 'pay_success'))
@@ -531,7 +550,6 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(f"👥 **Refer & Earn:**\nShare this link with your friends. When they buy a PDF, you get ₹10 in your wallet!\n\n`{ref_link}`", parse_mode="Markdown")
 
 def main():
-    # Start Flask server in a separate thread to satisfy Render port binding requirement
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.daemon = True
     flask_thread.start()
