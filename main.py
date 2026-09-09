@@ -44,7 +44,7 @@ def init_db():
             referral_count INT DEFAULT 0
         )
     ''')
-    # Orders Table
+    # Orders Table (with phone column included)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             order_id TEXT PRIMARY KEY,
@@ -528,8 +528,7 @@ def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(language_selection, pattern="^lang_"))
-    # FIX: Updated pattern to include all callback actions so every button works perfectly
-    app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
+    app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pmkisan|buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("Bot is running with Professional PDF Integration & Flask Web Server...")
