@@ -46,7 +46,7 @@ def init_db():
         )
     ''')
     
-    # Orders Table (with phone column included)
+    # Orders Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             order_id TEXT PRIMARY KEY,
@@ -57,7 +57,7 @@ def init_db():
         )
     ''')
     
-    # Coupons Table
+    # Coupons Table (Ensuring coupon_id is the primary/correct column)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS coupons (
             coupon_id TEXT PRIMARY KEY,
@@ -67,6 +67,13 @@ def init_db():
             is_winner BOOLEAN DEFAULT FALSE
         )
     ''')
+
+    # FIX: Safety ALTER statements to ensure columns exist even if tables were already created previously
+    cur.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS phone TEXT;")
+    cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS coupon_id TEXT;")
+    cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS user_id BIGINT;")
+    cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS phone TEXT;")
+    cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS order_id TEXT;")
     
     conn.commit()
     cur.close()
@@ -532,10 +539,7 @@ def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(language_selection, pattern="^lang_"))
-    
-    # Updated pattern to securely handle all menu callback actions without missing any
     app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
-    
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("Bot is running with Professional PDF Integration & Flask Web Server...")
