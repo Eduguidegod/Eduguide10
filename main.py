@@ -92,7 +92,7 @@ LANG = {
         'btn_coupons': "🎟 માય કૂપન્સ & ડ્રો ઈનામો",
         'btn_ref': "👥 રેફરલ લિંક",
         'limit_exceeded': "⚠️ તમે આ મોબાઈલ નંબરથી મહત્તમ ૨૦ પીડીએફ ખરીદવાની મર્યાદા પૂરી કરી દીધી છે.",
-        'pay_text': "🔗 તમારી ₹૫૦ ની પેમેન્ટ લિંક તૈયાર છે:\nકૃપા કરીને નીચે આપેલ બટન પર ક્લિક કરીને પેમેન્ટ પૂરું કરો, ત્યારબાદ જ 'પેમેન્ટ સ્ટેટસ તપાસો' બટન દબાવો.",
+        'pay_text': "📚 **સંપૂર્ણ કારકિર્દી માર્ગદર્શિકા અને સરકારી નોકરી રોડમેપ**\n\n✨ **આ પીડીએફની ખાસિયતો:**\n🎯 **સાચો પ્રવાહ પસંદ કરો:** ધોરણ ૧૦ અને ૧૨ પછી Science, Commerce કે Arts માંથી કયા ક્ષેત્રમાં ભવિષ્ય ઉજ્જવળ છે તેની સાચી દિશા.\n🛠️ **ડિપ્લોમા અને ITI ના શોર્ટકટ્સ:** ઓછા સમયમાં ડાયરેક્ટ સરકારી નોકરી મેળવવાના ટેકનિકલ કોર્સની સંપૂર્ણ માહિતી.\n🇮🇳 **ગુજરાત અને કેન્દ્ર સરકારની ભરતીઓ:** LRD પોલીસ, વનરક્ષક, તલાટી, રેલવે, SSC અને બેંકિંગ જેવી પરીક્ષાઓ માટે લાયકાત અને તૈયારીની સ્માર્ટ રણનીતિ.\n\n🔗 તમારી ₹૫૦ ની પેમેન્ટ લિંક તૈયાર છે:",
         'btn_pay': "🔗 પેમેન્ટ કરો (Razorpay)",
         'btn_check': "🔄 પેમેન્ટ સ્ટેટસ તપાસો",
         'pay_pending': "⏳ તમારું પેમેન્ટ હજુ સુધી કન્ફર્મ થયું નથી. જો તમે પેમેન્ટ કરી દીધું હોય, તો થોડીવાર પછી ફરીથી 'પેમેન્ટ સ્ટેટસ તપાસો' બટન દબાવો.",
@@ -114,7 +114,7 @@ LANG = {
         'btn_coupons': "🎟 My Coupons & Prizes",
         'btn_ref': "👥 Referral Link",
         'limit_exceeded': "⚠️ You have reached the maximum limit of 20 PDF purchases for this mobile number.",
-        'pay_text': "🔗 Your ₹50 payment link is ready:\nPlease complete the payment using the button below, then click 'Check Payment Status'.",
+        'pay_text': "📚 **Complete Career Guidance & Government Job Roadmap**\n\n✨ **Key Features:**\n🎯 **Right Stream Selection:** Guidance after 10th & 12th.\n🛠️ **Diploma & ITI Shortcuts:** Technical courses for direct jobs.\n🇮🇳 **Govt Recruitments:** LRD, Talati, Railways, SSC, Banking prep.\n\n🔗 Your ₹50 payment link is ready:",
         'btn_pay': "🔗 Pay Now (Razorpay)",
         'btn_check': "🔄 Check Payment Status",
         'pay_pending': "⏳ Your payment is not confirmed yet. If you have completed the payment, please try checking again after a moment.",
@@ -614,7 +614,7 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(get_text(user_id, 'btn_pay'), url=payment_url)],
             [InlineKeyboardButton(get_text(user_id, 'btn_check'), callback_data=f"check_{order_id}")]
         ]
-        await query.message.reply_text(get_text(user_id, 'pay_text'), reply_markup=InlineKeyboardMarkup(keyboard))
+        await query.message.reply_text(get_text(user_id, 'pay_text'), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data.startswith("check_"):
         parts = data.split("_", 1)
@@ -703,7 +703,14 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "refer_earn":
         bot_username = (await context.bot.get_me()).username
         ref_link = f"https://t.me/{bot_username}?start={user_id}"
-        await query.message.reply_text(f"👥 **Refer & Earn:**\nShare this link with your friends. When they buy a PDF, you get ₹10 in your wallet!\n\n`{ref_link}`", parse_mode="Markdown")
+        
+        # WhatsApp કે અન્ય જગ્યાએ ડાયરેક્ટ શેર કરવા માટેની લિંક
+        share_text = "ધોરણ ૧૦ અને ૧૨ પછી કારકિર્દી ઘડવા માટેની શ્રેષ્ઠ માર્ગદર્શિકા મેળવો:"
+        encoded_share_url = f"https://t.me/share/url?url={ref_link}&text={requests.utils.quote(share_text)}"
+        
+        keyboard = [[InlineKeyboardButton("📤 મિત્રો સાથે શેર કરો (WhatsApp/Others)", url=encoded_share_url)]]
+        
+        await query.message.reply_text(f"👥 **Refer & Earn:**\nShare this link with your friends. When they buy a PDF, you get ₹10 in your wallet!\n\n`{ref_link}`", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
 def main():
     flask_thread = threading.Thread(target=run_flask)
@@ -716,8 +723,9 @@ def main():
     app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    print("Bot is running with Professional PDF & Razorpay API Integration...")
+    print("Bot is running successfully with all features...")
     app.run_polling()
 
 if __name__ == '__main__':
     main()
+    
