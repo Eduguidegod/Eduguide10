@@ -92,7 +92,7 @@ LANG = {
         'btn_coupons': "🎟 માય કૂપન્સ & ડ્રો ઈનામો",
         'btn_ref': "👥 રેફરલ લિંક",
         'limit_exceeded': "⚠️ તમે આ મોબાઈલ નંબરથી મહત્તમ ૨૦ પીડીએફ ખરીદવાની મર્યાદા પૂરી કરી દીધી છે.",
-        'pay_text': "📚 **સંપૂર્ણ કારકિર્દી માર્ગદર્શિકા અને સરકારી નોકરી રોડમેપ**\n\n✨ **આ પીડીએફની ખાસિયતો:**\n🎯 **સાચો પ્રવાહ પસંદ કરો:** ધોરણ ૧૦ અને ૧૨ પછી Science, Commerce કે Arts માંથી કયા ક્ષેત્રમાં ભવિષ્ય ઉજ્જવળ છે તેની સાચી દિશા.\n🛠️ **ડિપ્લોમા અને ITI ના શોર્ટકટ્સ:** ઓછા સમયમાં ડાયરેક્ટ સરકારી નોકરી મેળવવાના ટેકનિકલ કોર્સની સંપૂર્ણ માહિતી.\n🇮🇳 **ગુજરાત અને કેન્દ્ર સરકારની ભરતીઓ:** LRD પોલીસ, વનરક્ષક, તલાટી, રેલવે, SSC અને બેંકિંગ જેવી પરીક્ષાઓ માટે લાયકાત અને તૈયારીની સ્માર્ટ રણનીતિ.\n\n🔗 તમારી ₹૫૦ ની પેમેન્ટ લિંક તૈયાર છે:",
+        'pay_text': "📚 **સંપૂર્ણ કારકિર્દી માર્ગદર્શિકા અને સરકારી નોકરી રોડમેપ**\n\n✨ **આ પીડીએફની ખાસિયતો:**\n🎯 **સાચો પ્રવાહ પસંદ કરો:** ધોરણ ૧૦ અને ૧૨ પછી Science, Commerce કે Arts માંથી કયા ક્ષેત્રમાં ભવિષ્ય ઉજ્જવળ છે તેની સાચી દિશા.\n🛠️ **ડિપ્લોમા અને ITI ના શોર્ટકટ્સ:** ઓછા સમયમાં ડાયરેક્ટ સરકારી નોકરી મેળવવાના ટેકનિકલ કોર્સની સંપૂર્ણ માહિતી.\n🇮🇳 **ગુજરાત અને કેન્દ્ર સરકારની ભરતીઓ:** LRD પોલીસ, વનરક્ષક, તલાટી, રેલવે, SSC અને બેંકિંગ જેવી પરીક્ષાઓ માટે લાયકાત અને તૈયારીની સ્માર્ટ રણનીતિ.\n\n🔗 તમારી પેમેન્ટ લિંક તૈયાર છે:",
         'btn_pay': "🔗 પેમેન્ટ કરો (Razorpay)",
         'btn_check': "🔄 પેમેન્ટ સ્ટેટસ તપાસો",
         'pay_pending': "⏳ તમારું પેમેન્ટ હજુ સુધી કન્ફર્મ થયું નથી. જો તમે પેમેન્ટ કરી દીધું હોય, તો થોડીવાર પછી ફરીથી 'પેમેન્ટ સ્ટેટસ તપાસો' બટન દબાવો.",
@@ -102,7 +102,10 @@ LANG = {
         'btn_withdraw': "💸 UPI દ્વારા પૈસા ઉપાડો",
         'ask_upi': "કૃપા કરીને તમારું UPI ID મોકલો (દા.ત., yourname@upi):",
         'withdraw_success': "✅ તમારી વિડ્રોઅલ રિક્વેસ્ટ એડમિનને મોકલી દેવાઈ છે. ટૂંક સમયમાં બેંક ખાતામાં જમા થઈ જશે.",
-        'prizes_info': "🎁 **₹૧૦,૦૬,૦૦૦ ના ડ્રો ઈનામો:**\n1. ₹5,00,000 (1 વ્યક્તિ)\n2. ₹2,00,000 (1 વ્યક્તિ)\n3. ₹1,00,000 (1 વ્યક્તિ)\n4. ₹50,000 (1 વ્યક્તિ)\n5. ₹25,000 (1 વ્યક્તિ)\n6-10. દરેકને ₹5,000\n11-50. દરેકને ₹1,000\n51-100. દરેકને ₹500\n101-500. દરેકને ₹100"
+        'prizes_info': "🎁 **₹૧૦,૦૬,૦૦૦ ના ડ્રો ઈનામો:**\n1. ₹5,00,000 (1 વ્યક્તિ)\n2. ₹2,00,000 (1 વ્યક્તિ)\n3. ₹1,00,000 (1 વ્યક્તિ)\n4. ₹50,000 (1 વ્યક્તિ)\n5. ₹25,000 (1 વ્યક્તિ)\n6-10. દરેકને ₹5,000\n11-50. દરેકને ₹1,000\n51-100. દરેકને ₹500\n101-500. દરેકને ₹100",
+        'ref_text': "👥 **રેફર એન્ડ અર્ન (Refer & Earn):**\nઆ લિંક તમારા મિત્રો સાથે શેર કરો. જ્યારે તેઓ પીડીએફ ખરીદશે, ત્યારે તમારા વોલેટમાં ₹૧૦ જમા થશે!\n\n`{}`",
+        'btn_share': "📤 મિત્રો સાથે શેર કરો (WhatsApp/અન્ય)",
+        'share_msg': "ધોરણ ૧૦ અને ૧૨ પછી કારકિર્દી ઘડવા માટેની શ્રેષ્ઠ માર્ગદર્શિકા મેળવો:"
     },
     'en': {
         'ask_name': "Please send your full name:",
@@ -114,7 +117,7 @@ LANG = {
         'btn_coupons': "🎟 My Coupons & Prizes",
         'btn_ref': "👥 Referral Link",
         'limit_exceeded': "⚠️ You have reached the maximum limit of 20 PDF purchases for this mobile number.",
-        'pay_text': "📚 **Complete Career Guidance & Government Job Roadmap**\n\n✨ **Key Features:**\n🎯 **Right Stream Selection:** Guidance after 10th & 12th.\n🛠️ **Diploma & ITI Shortcuts:** Technical courses for direct jobs.\n🇮🇳 **Govt Recruitments:** LRD, Talati, Railways, SSC, Banking prep.\n\n🔗 Your ₹50 payment link is ready:",
+        'pay_text': "📚 **Complete Career Guidance & Government Job Roadmap**\n\n✨ **Key Features:**\n🎯 **Right Stream Selection:** Guidance after 10th & 12th.\n🛠️ **Diploma & ITI Shortcuts:** Technical courses for direct jobs.\n🇮🇳 **Govt Recruitments:** LRD, Talati, Railways, SSC, Banking prep.\n\n🔗 Your payment link is ready:",
         'btn_pay': "🔗 Pay Now (Razorpay)",
         'btn_check': "🔄 Check Payment Status",
         'pay_pending': "⏳ Your payment is not confirmed yet. If you have completed the payment, please try checking again after a moment.",
@@ -124,7 +127,10 @@ LANG = {
         'btn_withdraw': "💸 Withdraw via UPI",
         'ask_upi': "Please send your UPI ID (e.g., yourname@upi):",
         'withdraw_success': "✅ Your withdrawal request has been sent to the admin.",
-        'prizes_info': "🎁 **₹10,06,000 Prize Pool:**\n1. ₹5,00,000 (1 winner)\n2. ₹2,00,000 (1 winner)\n3. ₹1,00,000 (1 winner)\n4. ₹50,000 (1 winner)\n5. ₹25,000 (1 winner)\n6-10. ₹5,000 each\n11-50. ₹1,000 each\n51-100. ₹500 each\n101-500. ₹100 each"
+        'prizes_info': "🎁 **₹10,06,000 Prize Pool:**\n1. ₹5,00,000 (1 winner)\n2. ₹2,00,000 (1 winner)\n3. ₹1,00,000 (1 winner)\n4. ₹50,000 (1 winner)\n5. ₹25,000 (1 winner)\n6-10. ₹5,000 each\n11-50. ₹1,000 each\n51-100. ₹500 each\n101-500. ₹100 each",
+        'ref_text': "👥 **Refer & Earn:**\nShare this link with your friends. When they buy a PDF, you get ₹10 in your wallet!\n\n`{}`",
+        'btn_share': "📤 Share with Friends (WhatsApp/Others)",
+        'share_msg': "Get the ultimate career guidance roadmap after 10th & 12th:"
     }
 }
 
@@ -137,6 +143,15 @@ def get_text(user_id, key):
     conn.close()
     lang = res[0] if res and res[0] in ['gu', 'en'] else 'gu'
     return LANG[lang].get(key, LANG['gu'][key])
+
+def get_user_lang(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT language FROM users WHERE user_id = %s", (user_id,))
+    res = cur.fetchone()
+    cur.close()
+    conn.close()
+    return res[0] if res and res[0] in ['gu', 'en'] else 'gu'
 
 # ----------------- RAZORPAY API HELPER FUNCTIONS -----------------
 def create_razorpay_payment_link(order_id, amount_in_inr, customer_name, customer_phone):
@@ -416,7 +431,7 @@ def generate_career_pdf(coupon_code):
         data_guj = [
             ("પોલીસ કોન્સ્ટેબલ / LRD", "ધોરણ ૧૨ પાસ", "૧૮ થી ૩૩ વર્ષ", "શારીરિક કસોટી (દોડ) + લેખિત પરીક્ષા"),
             ("વનરક્ષક (Forest Guard)", "ધોરણ ૧૨ પાસ", "૧૮ થી ૩૩ વર્ષ", "CBRT કમ્પ્યુટર ટેસ્ટ + ફિઝિકલ ટેસ્ટ"),
-            ("તલાટી કમ મંત્રી / જુનિયર ક્લાર્ક", "ગ્રેજ્યુએટ (સ્નાતક)", "૨૧ થી ૩૫ વર્ષ", "CBRT / ઓબ્જેક્ટિવ સ્પર્ધાત્મક કસોટી"),
+            ("તલાલાટી કમ મંત્રી / જુનિયર ક્લાર્ક", "ગ્રેજ્યુએટ (સ્નાતક)", "૨૧ થી ૩૫ વર્ષ", "CBRT / ઓબ્જેક્ટિવ સ્પર્ધાત્મક કસોટી"),
             ("હાઈકોર્ટ પટાવાળા / બેલિફ", "ધોરણ ૧૦ / ૧૨ પાસ", "૧૮ થી ૩૫ વર્ષ", "ઓબ્જેક્ટિવ લેખિત પરીક્ષા"),
             ("મુખ્ય સેવિકા / ગ્રામ સેવક", "ડિપ્લોમા / ગ્રેજ્યુએટ", "૨૧ થી ૩૫ વર્ષ", "સ્પર્ધાત્મક લેખિત પરીક્ષા"),
             ("સબ-ઇન્સ્પેક્ટર (PSI)", "ગ્રેજ્યુએટ", "૨૧ થી ૩૫ વર્ષ", "ફિઝિકલ + પ્રિલિમિનરી + મુખ્ય પરીક્ષા")
@@ -704,13 +719,13 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_username = (await context.bot.get_me()).username
         ref_link = f"https://t.me/{bot_username}?start={user_id}"
         
-        # WhatsApp કે અન્ય જગ્યાએ ડાયરેક્ટ શેર કરવા માટેની લિંક
-        share_text = "ધોરણ ૧૦ અને ૧૨ પછી કારકિર્દી ઘડવા માટેની શ્રેષ્ઠ માર્ગદર્શિકા મેળવો:"
+        user_lang = get_user_lang(user_id)
+        share_text = LANG[user_lang]['share_msg']
         encoded_share_url = f"https://t.me/share/url?url={ref_link}&text={requests.utils.quote(share_text)}"
         
-        keyboard = [[InlineKeyboardButton("📤 મિત્રો સાથે શેર કરો (WhatsApp/Others)", url=encoded_share_url)]]
+        keyboard = [[InlineKeyboardButton(get_text(user_id, 'btn_share'), url=encoded_share_url)]]
         
-        await query.message.reply_text(f"👥 **Refer & Earn:**\nShare this link with your friends. When they buy a PDF, you get ₹10 in your wallet!\n\n`{ref_link}`", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await query.message.reply_text(get_text(user_id, 'ref_text').format(ref_link), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
 def main():
     flask_thread = threading.Thread(target=run_flask)
@@ -723,9 +738,8 @@ def main():
     app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    print("Bot is running successfully with all features...")
+    print("Bot is running successfully with all finalized features...")
     app.run_polling()
 
 if __name__ == '__main__':
     main()
-    
