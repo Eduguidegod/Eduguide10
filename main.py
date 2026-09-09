@@ -16,7 +16,7 @@ app_flask = Flask(__name__)
 
 @app_flask.route('/')
 def home():
-    return "EduGuide Telegram Bot is live and running with Razorpay API!"
+    return "EduGuide Telegram Bot is live and running!"
 
 def run_flask():
     port = int(os.getenv("PORT", 10000))
@@ -27,7 +27,6 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL", "postgres://user:password@localhost:5432/dbname")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "123456789"))
 
-# Razorpay API Credentials (Render ના Environment Variables માં સેટ કરવાના રહેશે)
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "YOUR_RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "YOUR_RAZORPAY_KEY_SECRET")
 
@@ -71,7 +70,6 @@ def init_db():
         )
     ''')
 
-    # Safety ALTER statements
     cur.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_link_id TEXT;")
     cur.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS phone TEXT;")
     cur.execute("ALTER TABLE coupons ADD COLUMN IF NOT EXISTS coupon_id TEXT;")
@@ -144,7 +142,7 @@ def get_text(user_id, key):
 def create_razorpay_payment_link(order_id, amount_in_inr, customer_name, customer_phone):
     url = "https://api.razorpay.com/v1/payment_links"
     payload = {
-        "amount": amount_in_inr * 100,  # Paise માં કન્વર્ટ કરવા માટે (₹50 = 5000 paise)
+        "amount": amount_in_inr * 100,
         "currency": "INR",
         "accept_partial": False,
         "description": "EduGuide Career Guidance PDF + Lucky Draw Coupon",
@@ -152,14 +150,9 @@ def create_razorpay_payment_link(order_id, amount_in_inr, customer_name, custome
             "name": customer_name,
             "contact": customer_phone
         },
-        "notify": {
-            "sms": False,
-            "email": False
-        },
+        "notify": {"sms": False, "email": False},
         "reminder_enable": False,
-        "notes": {
-            "order_id": order_id
-        }
+        "notes": {"order_id": order_id}
     }
     try:
         response = requests.post(url, json=payload, auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
@@ -180,7 +173,6 @@ def check_razorpay_payment_status(link_id):
         res_data = response.json()
         if response.status_code == 200:
             status = res_data.get("status")
-            # Razorpay લિંક સ્ટેટસ 'paid' હોય તો જ True પરત કરશે
             return status == "paid"
         return False
     except Exception as e:
@@ -476,7 +468,6 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         order_id = "ORD_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
         
-        # Razorpay API દ્વારા ઓટોમેટિક નવી પેમેન્ટ લિંક જનરેટ કરો
         link_id, payment_url = create_razorpay_payment_link(order_id, 50, name, phone)
         
         if not payment_url:
@@ -497,20 +488,35 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(get_text(user_id, 'pay_text'), reply_markup=InlineKeyboardMarkup(keyboard))
 
     elif data.startswith("check_"):
-        order_id = data.split("_")[1]
+        parts = data.split("_", 1)
+        if len(parts) < 2:
+            await query.message.reply_text("⚠️ ઓર્ડરની માહિતી મળી નથી.")
+            return
+            
+        order_id = parts[1]
         
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT razorpay_link_id, status FROM orders WHERE order_id = %s", (order_id,))
+        
+        # 1. પેહેલા સીધા ઓર્ડર આઈડીથી ચેક કરો
+        cur.execute("SELECT razorpay_link_id, status FROM orders WHERE order_id = %s AND user_id = %s", (order_id, user_id))
         order_res = cur.fetchone()
         
+        # 2. જો ઓર્ડર આઈડીથી ન મળે (બટન જૂનું હોય), તો યુઝરનો છેલ્લો પેન્ડિંગ ઓર્ડર શોધો
         if not order_res:
-            cur.close()
-            conn.close()
-            await query.message.reply_text("⚠️ ઓર્ડરની માહિતી મળી નથી.")
-            return
-
-        link_id, current_status = order_res[0], order_res[1]
+            cur.execute("SELECT order_id, razorpay_link_id, status FROM orders WHERE user_id = %s AND status != 'paid' ORDER BY order_id DESC LIMIT 1", (user_id,))
+            latest_order = cur.fetchone()
+            if latest_order:
+                order_id = latest_order[0]
+                link_id = latest_order[1]
+                current_status = latest_order[2]
+            else:
+                cur.close()
+                conn.close()
+                await query.message.reply_text("⚠️ ઓર્ડરની માહિતી મળી નથી. કૃપા કરીને 'ગાઇડ ખરીદો' દબાવી નવી લિંક બનાવો.")
+                return
+        else:
+            link_id, current_status = order_res[0], order_res[1]
 
         # જો ઓર્ડર પહેલેથી paid ન હોય, તો Razorpay API થી લિંકનું સ્ટેટસ લાઈવ ચેક કરો
         if current_status != 'paid':
@@ -525,7 +531,6 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
 
         # પેમેન્ટ સફળ થયા પછી જ આગળની પ્રોસેસ થશે
-        # રેફરલ બોનસ અને કૂપન જનરેશન
         cur.execute("SELECT referred_by FROM users WHERE user_id = %s", (user_id,))
         ref_res = cur.fetchone()
         if ref_res and ref_res[0]:
@@ -586,8 +591,10 @@ def main():
     app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    print("Bot is running with Razorpay API Integration & Professional PDF...")
+    print("Bot is running with Smart Order Fallback & Razorpay API...")
     app.run_polling()
 
 if __name__ == '__main__':
     main()
+
+ 
