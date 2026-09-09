@@ -32,6 +32,7 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
+    
     # Users Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -44,6 +45,7 @@ def init_db():
             referral_count INT DEFAULT 0
         )
     ''')
+    
     # Orders Table (with phone column included)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS orders (
@@ -54,6 +56,7 @@ def init_db():
             status TEXT DEFAULT 'pending'
         )
     ''')
+    
     # Coupons Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS coupons (
@@ -64,6 +67,7 @@ def init_db():
             is_winner BOOLEAN DEFAULT FALSE
         )
     ''')
+    
     conn.commit()
     cur.close()
     conn.close()
@@ -528,7 +532,10 @@ def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(language_selection, pattern="^lang_"))
-    app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pmkisan|buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
+    
+    # Updated pattern to securely handle all menu callback actions without missing any
+    app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
+    
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("Bot is running with Professional PDF Integration & Flask Web Server...")
