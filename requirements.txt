@@ -1,1 +1,8 @@
+pyTelegramBotAPI
+razorpay
+flask
+fpdf2
+uharfbuzz
+fonttools
+psycopg2-binary
 
