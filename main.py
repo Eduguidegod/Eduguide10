@@ -92,7 +92,7 @@ LANG = {
         'btn_coupons': "🎟 માય કૂપન્સ & ડ્રો ઈનામો",
         'btn_ref': "👥 રેફરલ લિંક",
         'limit_exceeded': "⚠️ તમે આ મોબાઈલ નંબરથી મહત્તમ ૨૦ પીડીએફ ખરીદવાની મર્યાદા પૂરી કરી દીધી છે.",
-        'pay_text': "📚 **સંપૂર્ણ કારકિર્દી માર્ગદર્શિકા અને સરકારી નોકરી રોડમેપ**\n\n✨ **આ પીડીએફની ખાસિયતો:**\n🎯 **સાચો પ્રવાહ પસંદ કરો:** ધોરણ ૧૦ અને ૧૨ પછી Science, Commerce કે Arts માંથી કયા ક્ષેત્રમાં ભવિષ્ય ઉજ્જવળ છે તેની સાચી દિશા.\n🛠️ **ડિપ્લોમા અને ITI ના શોર્ટકટ્સ:** ઓછા સમયમાં ડાયરેક્ટ સરકારી નોકરી મેળવવાના ટેકનિકલ કોર્સની સંપૂર્ણ માહિતી.\n🇮🇳 **ગુજરાત અને કેન્દ્ર સરકારની ભરતીઓ:** LRD પોલીસ, વનરક્ષક, તલાટી, રેલવે, SSC અને બેંકિંગ જેવી પરીક્ષાઓ માટે લાયકાત અને તૈયારીની સ્માર્ટ રણનીતિ.\n\n🔗 તમારી પેમેન્ટ લિંક તૈયાર છે:",
+        'pay_text': "📚 **સંપૂર્ણ કારકિર્દી માર્ગદર્શિકા અને સરકારી નોકરી રોડમેપ**\n\n✨ **આ પીડીએફની ખાસિયતો:**\n🎯 **સાચો પ્રવાહ પસંદ કરો:** ધોરણ ૧૦ અને ૧૨ પછી Science, Commerce કે Arts માંથી કયા ક્ષેત્રમાં ભવિષ્ય ઉજ્જવળ છે તેની સાચી દિશા.\n🛠️ **ડિપ્લોમા અને ITI ના શોર્ટકટ્સ:** ઓછા સમયમાં ડાયરેક્ટ સરકારી નોકરી મેળવવાના ટેકનિકલ કોર્સની સંપૂર્ણ માહિતી.\n🇮🇳 **ગુજરાત અને કેન્દ્ર સરકારની ભરતીઓ:** LRD પોલીસ, વનરક્ષક, તલાટી, રેલવે, SSC અને બેંકિંગ જેવી પરીક્ષાઓ માટે લાયકાત અને તૈયારીની સ્માર્ટ રણનીતિ.\n\n🔗 તમારી ₹૫૦ ની પેમેન્ટ લિંક તૈયાર છે:",
         'btn_pay': "🔗 પેમેન્ટ કરો (Razorpay)",
         'btn_check': "🔄 પેમેન્ટ સ્ટેટસ તપાસો",
         'pay_pending': "⏳ તમારું પેમેન્ટ હજુ સુધી કન્ફર્મ થયું નથી. જો તમે પેમેન્ટ કરી દીધું હોય, તો થોડીવાર પછી ફરીથી 'પેમેન્ટ સ્ટેટસ તપાસો' બટન દબાવો.",
@@ -117,7 +117,7 @@ LANG = {
         'btn_coupons': "🎟 My Coupons & Prizes",
         'btn_ref': "👥 Referral Link",
         'limit_exceeded': "⚠️ You have reached the maximum limit of 20 PDF purchases for this mobile number.",
-        'pay_text': "📚 **Complete Career Guidance & Government Job Roadmap**\n\n✨ **Key Features:**\n🎯 **Right Stream Selection:** Guidance after 10th & 12th.\n🛠️ **Diploma & ITI Shortcuts:** Technical courses for direct jobs.\n🇮🇳 **Govt Recruitments:** LRD, Talati, Railways, SSC, Banking prep.\n\n🔗 Your payment link is ready:",
+        'pay_text': "📚 **Complete Career Guidance & Government Job Roadmap**\n\n✨ **Key Features:**\n🎯 **Right Stream Selection:** Guidance after 10th & 12th.\n🛠️ **Diploma & ITI Shortcuts:** Technical courses for direct jobs.\n🇮🇳 **Govt Recruitments:** LRD, Talati, Railways, SSC, Banking prep.\n\n🔗 Your ₹50 payment link is ready:",
         'btn_pay': "🔗 Pay Now (Razorpay)",
         'btn_check': "🔄 Check Payment Status",
         'pay_pending': "⏳ Your payment is not confirmed yet. If you have completed the payment, please try checking again after a moment.",
@@ -431,7 +431,7 @@ def generate_career_pdf(coupon_code):
         data_guj = [
             ("પોલીસ કોન્સ્ટેબલ / LRD", "ધોરણ ૧૨ પાસ", "૧૮ થી ૩૩ વર્ષ", "શારીરિક કસોટી (દોડ) + લેખિત પરીક્ષા"),
             ("વનરક્ષક (Forest Guard)", "ધોરણ ૧૨ પાસ", "૧૮ થી ૩૩ વર્ષ", "CBRT કમ્પ્યુટર ટેસ્ટ + ફિઝિકલ ટેસ્ટ"),
-            ("તલાલાટી કમ મંત્રી / જુનિયર ક્લાર્ક", "ગ્રેજ્યુએટ (સ્નાતક)", "૨૧ થી ૩૫ વર્ષ", "CBRT / ઓબ્જેક્ટિવ સ્પર્ધાત્મક કસોટી"),
+            ("તલાટી કમ મંત્રી / જુનિયર ક્લાર્ક", "ગ્રેજ્યુએટ (સ્નાતક)", "૨૧ થી ૩૫ વર્ષ", "CBRT / ઓબ્જેક્ટિવ સ્પર્ધાત્મક કસોટી"),
             ("હાઈકોર્ટ પટાવાળા / બેલિફ", "ધોરણ ૧૦ / ૧૨ પાસ", "૧૮ થી ૩૫ વર્ષ", "ઓબ્જેક્ટિવ લેખિત પરીક્ષા"),
             ("મુખ્ય સેવિકા / ગ્રામ સેવક", "ડિપ્લોમા / ગ્રેજ્યુએટ", "૨૧ થી ૩૫ વર્ષ", "સ્પર્ધાત્મક લેખિત પરીક્ષા"),
             ("સબ-ઇન્સ્પેક્ટર (PSI)", "ગ્રેજ્યુએટ", "૨૧ થી ૩૫ વર્ષ", "ફિઝિકલ + પ્રિલિમિનરી + મુખ્ય પરીક્ષા")
