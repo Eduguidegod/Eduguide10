@@ -1,8 +1,7 @@
-pyTelegramBotAPI
+python-telegram-bot
+psycopg2-binary
+fpdf2
 razorpay
 flask
-fpdf2
 uharfbuzz
 fonttools
-psycopg2-binary
-
