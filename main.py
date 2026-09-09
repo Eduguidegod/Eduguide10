@@ -2,11 +2,24 @@ import os
 import random
 import string
 import psycopg2
+import threading
+from flask import Flask
 from io import BytesIO
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+
+# ----------------- FLASK WEB SERVER (FOR RENDER PORT BINDING) -----------------
+app_flask = Flask(__name__)
+
+@app_flask.route('/')
+def home():
+    return "EduGuide Telegram Bot is live and running!"
+
+def run_flask():
+    port = int(os.getenv("PORT", 10000))
+    app_flask.run(host="0.0.0.0", port=port)
 
 # ----------------- CONFIGURATION & DB CONNECTION -----------------
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
@@ -507,13 +520,18 @@ async def button_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(f"👥 **Refer & Earn:**\nShare this link with your friends. When they buy a PDF, you get ₹10 in your wallet!\n\n`{ref_link}`", parse_mode="Markdown")
 
 def main():
+    # Start Flask server in a separate thread to satisfy Render port binding requirement
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(language_selection, pattern="^lang_"))
     app.add_handler(CallbackQueryHandler(button_router, pattern="^(buy_pdf|check_|my_wallet|withdraw_req|my_coupons|refer_earn)"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    print("Bot is running with Professional PDF Integration...")
+    print("Bot is running with Professional PDF Integration & Flask Web Server...")
     app.run_polling()
 
 if __name__ == '__main__':
