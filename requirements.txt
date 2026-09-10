@@ -5,3 +5,4 @@ razorpay
 flask
 uharfbuzz
 fonttools
+pyTelegramBotAPI
