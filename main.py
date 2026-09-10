@@ -21,6 +21,7 @@ from telebot import types
 from flask import Flask, request, jsonify
 
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 
 
 # ============================================================
@@ -314,7 +315,6 @@ def init_db():
             ON delivery_queue(status)
         """)
 
-        # Insert fixed prize list only if table is empty.
         cur.execute("SELECT COUNT(*) AS count FROM prizes")
         count = cur.fetchone()["count"]
 
@@ -764,7 +764,6 @@ def create_payment_link_for_user(user_id):
             }
         }
 
-        # External API call is intentionally made before DB commit.
         payment_link = razorpay_client.payment_link.create(
             payment_link_data
         )
@@ -970,7 +969,6 @@ def process_paid_order(
                 "reason": "payment_record_missing"
             }
 
-        # Validate actual payment link if provided.
         if payment_link is not None:
             valid, extracted_id = validate_paid_payment_link(
                 payment_link,
@@ -989,8 +987,6 @@ def process_paid_order(
             if payment_id is None:
                 payment_id = extracted_id
 
-        # Lock user so two simultaneous successful payments
-        # cannot exceed the purchase limit.
         cur.execute("""
             SELECT *
             FROM users
@@ -1118,119 +1114,301 @@ def process_paid_order(
 
 
 # ============================================================
-# DELIVERY
+# PROFESSIONAL PDF (MERGED FROM SECOND CODE)
 # ============================================================
 
-def find_font():
-    candidates = [
-        "/usr/share/fonts/truetype/noto/NotoSansGujarati-Regular.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansGujarati-Regular.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSansGujarati-Regular.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "./NotoSansGujarati-Regular.ttf",
-        "./fonts/NotoSansGujarati-Regular.ttf",
-    ]
+class ProfessionalPDF(FPDF):
+    def __init__(self):
+        super().__init__(orientation='P', unit='mm', format='A4')
+        self.set_margins(15, 15, 15)
+        self.set_auto_page_break(auto=True, margin=15)
+        
+        self.set_text_shaping(True)
+            
+        self.NAVY = (30, 58, 138)
+        self.GOLD = (252, 211, 77)
+        self.WHITE = (255, 255, 255)
+        self.GRAY = (71, 85, 105)
+        self.BLACK = (30, 41, 59)
+        self.LIGHT_BG = (244, 246, 250)
+        
+        self.CONTENT_W = 180
+        self.MARGIN = 15
 
-    for path in candidates:
-        if os.path.exists(path):
-            return path
+    def rounded_box(self, x, y, w, h, fill_color, draw_color, radius):
+        self.set_fill_color(*fill_color)
+        self.set_draw_color(*draw_color)
+        self.rect(x, y, w, h, style='DF', round_corners=True, corner_radius=radius)
 
-    return None
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Gujarati", "", 8)
+        self.set_text_color(150, 150, 150)
+        self.cell(0, 10, f"પાનું {self.page_no()}", align="C")
+
+    def info_card(self, title, text):
+        self.ln(3)
+        self.set_fill_color(*self.LIGHT_BG)
+        self.set_draw_color(200, 210, 230)
+        self.set_line_width(0.2)
+        
+        self.rect(self.get_x(), self.get_y(), self.CONTENT_W, 22, style='DF', round_corners=True, corner_radius=2)
+        
+        self.set_xy(self.get_x() + 4, self.get_y() + 3)
+        self.set_font("Gujarati", "B", 10.5)
+        self.set_text_color(*self.NAVY)
+        self.cell(0, 6, title, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        
+        self.set_x(self.get_x() + 4)
+        self.set_font("Gujarati", "", 9.5)
+        self.set_text_color(*self.GRAY)
+        self.multi_cell(170, 5, text)
+        self.ln(6)
+
+    def section_title(self, num, title):
+        self.ln(4)
+        self.set_font("Gujarati", "B", 12)
+        self.set_text_color(*self.NAVY)
+        self.cell(0, 8, f"{num}. {title}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        
+        self.set_line_width(0.3)
+        self.set_draw_color(*self.NAVY)
+        self.line(self.get_x(), self.get_y(), self.get_x() + self.CONTENT_W, self.get_y())
+        self.ln(3)
+
+    def bullet(self, label, text):
+        full_text = f"{label}{text}" if label else text
+        
+        start_x = self.get_x() + 2
+        start_y = self.get_y()
+        
+        self.set_xy(start_x, start_y)
+        self.set_font("Gujarati", "", 10)
+        self.set_text_color(*self.NAVY)
+        self.cell(4, 5, "•")
+        
+        self.set_xy(start_x + 4, start_y)
+        self.set_font("Gujarati", "", 9.5)
+        self.set_text_color(*self.GRAY)
+        self.multi_cell(self.CONTENT_W - 6, 5, full_text)
+        self.ln(1.5)
+
+    def stream_card(self, title, items, height=45):
+        self.ln(3)
+        start_y = self.get_y()
+        
+        if start_y + height > 275:
+            self.add_page()
+            start_y = self.get_y()
+
+        self.set_fill_color(255, 255, 255)
+        self.set_draw_color(*self.NAVY)
+        self.set_line_width(0.3)
+        self.rect(self.get_x(), start_y, self.CONTENT_W, height, style='D', round_corners=True, corner_radius=2)
+        
+        self.set_xy(self.get_x() + 4, start_y + 3)
+        self.set_font("Gujarati", "B", 11)
+        self.set_text_color(*self.NAVY)
+        self.cell(0, 6, title, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.ln(1)
+        
+        for label, text in items:
+            full_text = f"{label}{text}" if label else text
+            bx = self.MARGIN + 4
+            by = self.get_y()
+            
+            self.set_xy(bx, by)
+            self.set_font("Gujarati", "", 10)
+            self.set_text_color(*self.NAVY)
+            self.cell(4, 5, "•")
+            
+            self.set_xy(bx + 4, by)
+            self.set_font("Gujarati", "", 9.5)
+            self.set_text_color(*self.GRAY)
+            self.multi_cell(self.CONTENT_W - 12, 5, full_text)
+            self.ln(1)
+            
+        self.set_y(start_y + height + 2)
 
 
-def generate_pdf():
-    pdf = FPDF()
-
-    pdf.set_auto_page_break(
-        auto=True,
-        margin=15
-    )
+def generate_career_pdf(lang='gu'):
+    pdf = ProfessionalPDF()
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    font_path = os.path.join(BASE_DIR, 'Gujarati.ttf')
+    
+    try:
+        pdf.add_font("Gujarati", "", font_path)
+        pdf.add_font("Gujarati", "B", font_path)
+    except Exception as e:
+        print("Font Error:", e)
+        return None
 
     pdf.add_page()
+    
+    x = pdf.MARGIN
+    y = pdf.get_y()
+    w = pdf.CONTENT_W
+    h = 35
 
-    font_path = find_font()
+    pdf.rounded_box(x, y, w, h, pdf.NAVY, pdf.NAVY, 3)
 
-    if font_path:
-        try:
-            pdf.add_font(
-                "Gujarati",
-                "",
-                font_path
-            )
-            font_name = "Gujarati"
-        except Exception:
-            font_name = "Helvetica"
-    else:
-        font_name = "Helvetica"
+    pdf.set_xy(x + 5, y + 6)
+    pdf.set_font("Gujarati", "B", 15.0)
+    pdf.set_text_color(*pdf.WHITE)
+    pdf.multi_cell(w - 10, 7, "સંપૂર્ણ કારકિર્દી માર્ગદર્શિકા અને સરકારી નોકરી રોડમેપ", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-    pdf.set_font(
-        font_name,
-        size=18
+    pdf.set_font("Gujarati", "", 9)
+    pdf.set_text_color(225, 232, 249)
+    pdf.multi_cell(w - 10, 5.3, "ધોરણ ૧૦ અને ૧૨ પછી શ્રેષ્ઠ પ્રવાહ પસંદગી, ઉચ્ચ અભ્યાસ અને સ્પર્ધાત્મક પરીક્ષાઓની A to Z માર્ગદર્શિકા", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    pill_y = y + 25.5
+    labels = ["વિશેષ ડિજિટલ એડિશન", "ગુજરાત & કેન્દ્ર સરકાર ભરતી વિશેષ"]
+    pill_widths = [33, 47]
+    total = sum(pill_widths) + 3
+    px = x + (w - total) / 2
+
+    for label, pw in zip(labels, pill_widths):
+        pdf.rounded_box(px, pill_y, pw, 6.5, pdf.GOLD, pdf.GOLD, 3)
+        pdf.set_xy(px, pill_y + 1.0)
+        pdf.set_font("Gujarati", "B", 6.6)
+        pdf.set_text_color(*pdf.NAVY)
+        pdf.cell(pw, 4.5, label, align="C")
+        px += pw + 3
+
+    pdf.set_y(y + h + 6)
+
+    pdf.info_card(
+        "આ માર્ગદર્શિકા કોના માટે છે?",
+        "ધોરણ ૧૦ કે ૧૨ પાસ કરેલ વિદ્યાર્થીઓ, વાલીઓ અને સરકારી નોકરીની તૈયારી કરતા ઉમેદવારો માટે એક સંપૂર્ણ સંકલન છે, જે ભવિષ્યના યોગ્ય નિર્ણયો લેવામાં મદદરૂપ બનશે."
     )
 
-    pdf.cell(
-        0,
-        12,
-        "EduGuide",
-        new_x="LMARGIN",
-        new_y="NEXT",
-        align="C"
+    pdf.section_title("૧", "ધોરણ ૧૦ પછી પ્રવાહની સાચી પસંદગી કેમ કરવી?")
+    pdf.set_font("Gujarati", "", 9.5)
+    pdf.set_text_color(*pdf.GRAY)
+    pdf.multi_cell(0, 5, "ધોરણ ૧૦ પાસ કર્યા પછી વિદ્યાર્થીના જીવનનો સૌથી મહત્વનો વળાંક આવે છે. મોટાભાગના વિદ્યાર્થીઓ મિત્રો કે પરિવારના દબાણમાં આવીને પ્રવાહ પસંદ કરતા હોય છે. પ્રવાહ પસંદ કરતી વખતે નીચેના ૩ મુદ્દા ધ્યાનમાં રાખો:")
+    pdf.ln(2)
+    pdf.bullet("પોતાનો રસ અને ક્ષમતા: ", "ગણિત અને વિજ્ઞાનમાં સાચી રુચિ હોય તો સાયન્સ, ગણતરી અને વેપાર/નાણાંમાં રુચિ હોય તો કૉમર્સ, અને વાંચન, ભાષા, ઈતિહાસ કે વહીવટમાં રુચિ હોય તો આર્ટ્સ પસંદ કરવું જોઈએ.")
+    pdf.bullet("ભવિષ્યનું લક્ષ્ય: ", "જો ડોક્ટર કે એન્જિનિયર બનવું હોય તો સાયન્સ જરૂરી છે. જો CA, બેંક ઓફિસર કે બિઝનેસ કરવો હોય તો કૉમર્સ શ્રેષ્ઠ છે. અને જો પોલીસ, તલાટી, ક્લાર્ક કે સિવિલ સર્વિસીસમાં જવું હોય તો આર્ટ્સ ઉપયોગી રહે છે.")
+    pdf.bullet("સમય અને નાણાકીય રોકાણ: ", "સાયન્સમાં ટ્યુશન અને આગળના અભ્યાસનો ખર્ચ વધુ હોઈ શકે છે, જ્યારે આર્ટ્સ અને કૉમર્સમાં પ્રમાણમાં ઓછો ખર્ચ થાય છે.")
+
+    pdf.section_title("૨", "પ્રવાહવાર સંપૂર્ણ વિશ્લેષણ (Science, Commerce, Arts)")
+
+    pdf.stream_card(
+        "સાયન્સ પ્રવાહ (Science Stream)",
+        [
+            ("", "સાયન્સ પ્રવાહમાં બે મુખ્ય ગ્રુપ હોય છે: ગ્રુપ-A (ગણિત) અને ગ્રુપ-B (બાયોલોજી)."),
+            ("ગ્રુપ-A પછીના વિકલ્પો: ", "B.E. / B.Tech (કમ્પ્યુટર, મિકેનિકલ, સિવિલ, ઇલેક્ટ્રિકલ), આર્કિટેક્ચર, મર્ચન્ટ નેવી, NDA (એરફોર્સ/નેવી), B.Sc. IT/CS, ડેટા સાયન્સ."),
+            ("ગ્રુપ-B પછીના વિકલ્પો: ", "MBBS, BDS, BAMS (આયુર્વેદ), BHMS (હોમિયોપેથી), નર્સિંગ (B.Sc Nursing), ફિઝિયોથેરાપી (BPT), ફાર્મસી (B.Pharm), એગ્રીકલ્ચર (B.Sc Agriculture)."),
+            ("લાભ: ", "ટેક્નિકલ અને મેડિકલ ક્ષેત્રે ઊંચી આવકની તકો તેમજ સાયન્સ પછી અન્ય કોઈપણ ફિલ્ડમાં જવાની છૂટછાટ મળે છે."),
+        ],
+        height=52,
     )
 
-    pdf.set_font(
-        font_name,
-        size=14
+    pdf.stream_card(
+        "કૉમર્સ પ્રવાહ (Commerce Stream)",
+        [
+            ("", "નાણાકીય વ્યવહારો, બેંકિંગ, એકાઉન્ટિંગ અને વેપાર-વાણિજ્યમાં રુચિ ધરાવતા વિદ્યાર્થીઓ માટે કૉમર્સ શ્રેષ્ઠ વિકલ્પ છે."),
+            ("મુખ્ય ડિગ્રી કોર્સ: ", "B.Com, BBA, BCA (કમ્પ્યુટર એપ્લિકેશન), BMS, B.Voc."),
+            ("પ્રોફેશનલ કોર્સ: ", "CA (ચાર્ટર્ડ એકાઉન્ટન્ટ), CS (કંપની સેક્રેટરી), CMA (કોસ્ટ મેનેજમેન્ટ એકાઉન્ટન્ટ), CFA (ફાઇનાન્શિયલ એનાલિસ્ટ)."),
+            ("", "કેરિયર ક્ષેત્રો: બેંકિંગ ક્ષેત્ર (PO, ક્લાર્ક), વીમા કંપનીઓ, ઇન્વેસ્ટમેન્ટ ફર્મ્સ, શેરબજાર, ટેક્સ કન્સલ્ટન્સી અને પોતાના સ્વતંત્ર બિઝનેસમાં ઉત્તમ તકો."),
+        ],
+        height=50,
     )
 
-    pdf.cell(
-        0,
-        10,
-        "Career Guidance Guide",
-        new_x="LMARGIN",
-        new_y="NEXT",
-        align="C"
+    pdf.stream_card(
+        "આર્ટ્સ પ્રવાહ (Arts / Humanities)",
+        [
+            ("", "આર્ટ્સ એ સ્પર્ધાત્મક પરીક્ષાઓ અને સરકારી નોકરીઓ માટે સૌથી વધુ સ્કોરિંગ અને અનુકૂળ પ્રવાહ માનવામાં આવે છે."),
+            ("મુખ્ય વિષયો: ", "ઇતિહાસ, ભૂગોળ, બંધારણ (રાજ્યશાસ્ત્ર), સમાજશાસ્ત્ર, મનોવિજ્ઞાન અને અર્થશાસ્ત્ર."),
+            ("મુખ્ય ડિગ્રીઓ: ", "B.A., B.S.W. (સોશિયલ વર્ક), B.J.M.C. (પત્રકારત્વ), B.Ed. (શિક્ષક માટે), LL.B. (વકીલાત)."),
+            ("વિશેષ ફાયદો: ", "તમામ સરકારી સ્પર્ધાત્મક પરીક્ષાઓ (GPSC, UPSC, પંચાયત) નો ૭૦% અભ્યાસક્રમ આર્ટ્સના વિષયો આધારિત હોય છે."),
+        ],
+        height=48,
     )
 
-    pdf.ln(8)
+    pdf.add_page() 
 
-    pdf.set_font(
-        font_name,
-        size=11
-    )
+    pdf.section_title("૩", "ડિપ્લોમા અને ITI (ધોરણ ૧૦ પછી સીધા ટેકનિકલ કોર્સ)")
+    pdf.set_font("Gujarati", "B", 10)
+    pdf.set_text_color(*pdf.NAVY)
+    pdf.cell(0, 6, "ડિપ્લોમા એન્જિનિયરિંગ (૩ વર્ષ)", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.bullet("", "મેકેનિકલ, સિવિલ, ઇલેક્ટ્રિકલ, કમ્પ્યુટર, ઓટોમોબાઇલ.")
+    pdf.bullet("", "ડિપ્લોમા પછી સીધા ડિગ્રીના બીજા વર્ષમાં પ્રવેશ (D2D).")
+    pdf.bullet("", "રેલવે જુનિયર એન્જિનિયર (RRB JE), GETCO, UGVCL/PGVCL માં સીધી જુનિયર એન્જિનિયર તરીકે ભરતી.")
+    pdf.ln(3)
 
-    content = [
-        "Career Guidance Guide",
-        "",
-        "આ માર્ગદર્શિકા વિદ્યાર્થીઓ અને યુવાનોને",
-        "કરિયર પસંદગી અને તૈયારીમાં મદદરૂપ થવા માટે તૈયાર કરવામાં આવી છે.",
-        "",
-        "મુખ્ય મુદ્દાઓ:",
-        "• યોગ્ય કરિયર પસંદગી",
-        "• સરકારી અને ખાનગી ક્ષેત્ર",
-        "• કૌશલ્ય વિકાસ",
-        "• અભ્યાસની યોજના",
-        "• સ્પર્ધાત્મક પરીક્ષાની તૈયારી",
-        "• રોજગાર માટે જરૂરી કુશળતાઓ",
-        "",
-        "EduGuide",
-    ]
+    pdf.set_font("Gujarati", "B", 10)
+    pdf.set_text_color(*pdf.NAVY)
+    pdf.cell(0, 6, "ITI વ્યવસાયિક કોર્સ (૧ થી ૨ વર્ષ)", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.bullet("", "ઇલેક્ટ્રિશિયન, ફિટર, વાયરમેન, ડીઝલ મિકેનિક, COPA.")
+    pdf.bullet("", "ટૂંકા ગાળામાં ટેકનિકલ નોકરી અથવા સ્વરોજગાર શરૂ કરવાની શ્રેષ્ઠ તક.")
+    pdf.bullet("", "રેલવે આસિસ્ટન્ટ લોકો પાયલટ (ALP), ટેકનિશિયન અને ISRO/DRDO માં સીધી સરકારી ભરતી.")
+    pdf.ln(5)
 
-    for line in content:
-        pdf.multi_cell(
-            0,
-            8,
-            line
-        )
+    pdf.section_title("૪", "ગુજરાત રાજ્ય સરકારની મુખ્ય ભરતીઓ")
+    pdf.set_font("Gujarati", "B", 9)
+    with pdf.table(col_widths=(45, 30, 30, 75), text_align="L", line_height=7) as table:
+        row = table.row()
+        for header in ["ભરતી/ હોદ્દો", "શૈક્ષણિક લાયકાત", "વયમર્યાદા", "પસંદગી પદ્ધતિ"]:
+            row.cell(header)
+        pdf.set_font("Gujarati", "", 8.5)
+        data_guj = [
+            ("પોલીસ કોન્સ્ટેબલ / LRD", "ધોરણ ૧૨ પાસ", "૧૮ થી ૩૩ વર્ષ", "શારીરિક કસોટી (દોડ) + લેખિત પરીક્ષા"),
+            ("વનરક્ષક (Forest Guard)", "ધોરણ ૧૨ પાસ", "૧૮ થી ૩૩ વર્ષ", "CBRT કમ્પ્યુટર ટેસ્ટ + ફિઝિકલ ટેસ્ટ"),
+            ("તલાટી કમ મંત્રી / જુનિયર ક્લાર્ક", "ગ્રેજ્યુએટ (સ્નાતક)", "૨૧ થી ૩૫ વર્ષ", "CBRT / ઓબ્જેક્ટિવ સ્પર્ધાત્મક કસોટી"),
+            ("હાઈકોર્ટ પટાવાળા / બેલિફ", "ધોરણ ૧૦ / ૧૨ પાસ", "૧૮ થી ૩૫ વર્ષ", "ઓબ્જેક્ટિવ લેખિત પરીક્ષા"),
+            ("મુખ્ય સેવિકા / ગ્રામ સેવક", "ડિપ્લોમા / ગ્રેજ્યુએટ", "૨૧ થી ૩૫ વર્ષ", "સ્પર્ધાત્મક લેખિત પરીક્ષા"),
+            ("સબ-ઇન્સ્પેક્ટર (PSI)", "ગ્રેજ્યુએટ", "૨૧ થી ૩૫ વર્ષ", "ફિઝિકલ + પ્રિલિમિનરી + મુખ્ય પરીક્ષા")
+        ]
+        for item in data_guj:
+            row = table.row()
+            for cell_data in item:
+                row.cell(cell_data)
+    pdf.ln(4)
 
-    output = pdf.output(
-        dest="S"
-    )
+    pdf.section_title("૫", "કેન્દ્ર સરકારની મુખ્ય નોકરીઓની તકો")
+    pdf.set_font("Gujarati", "B", 9)
+    with pdf.table(col_widths=(40, 25, 45, 70), text_align="L", line_height=7) as table:
+        row = table.row()
+        for header in ["વિભાગ / પરીક્ષા", "લાયકાત", "મુખ્ય પદો", "વિશેષ લાભ"]:
+            row.cell(header)
+        pdf.set_font("Gujarati", "", 8.5)
+        data_cen = [
+            ("SSC GD કોન્સ્ટેબલ", "૧૦ પાસ", "BSF, CISF, CRPF", "પેરામિલેટરી ફોર્સિસમાં કાયમી નોકરી"),
+            ("SSC CHSL", "૧૨ પાસ", "LDC, JSA, DEO", "કેન્દ્રીય મંત્રાલયોમાં ક્લાર્ક અને ઓફિસ વર્ક"),
+            ("રેલવે ગ્રુપ-D / ટેકનિશિયન", "૧૦ પાસ / ITI", "ટ્રેક મેન્ટેનર, લોકો પાયલટ", "રેલવે પાસ, મેડિકલ સુવિધા"),
+            ("ઇન્ડિયન આર્મી / નેવી", "૧૦ / ૧૨ પાસ", "અગ્નિવીર (જનરલ ડ્યુટી)", "૪ વર્ષ સેવા, આર્થિક પેકેજ"),
+            ("ઇન્ડિયન કોસ્ટ ગાર્ડ", "૧૨ સાયન્સ", "નાવિક જનરલ ડ્યુટી", "સમુદ્ર સુરક્ષામાં કેન્દ્રીય સંરક્ષણ પદ")
+        ]
+        for item in data_cen:
+            row = table.row()
+            for cell_data in item:
+                row.cell(cell_data)
+    pdf.ln(4)
 
-    if isinstance(output, str):
-        output = output.encode("latin1")
+    pdf.section_title("૬", "સ્પર્ધાત્મક પરીક્ષાઓની તૈયારી માટે સ્માર્ટ રણનીતિ")
+    pdf.bullet("1. સિલેબસ અને જૂના પેપર્સ: ", "સૌપ્રથમ જે પરીક્ષા આપવી હોય તેનો સત્તાવાર સિલેબસ મેળવી છેલ્લા ૫ વર્ષના પેપર સોલ્વ કરો.")
+    pdf.bullet("2. GCERT / NCERT પુસ્તકો: ", "ધોરણ ૬ થી ૧૦ ના સામાજિક વિજ્ઞાન, વિજ્ઞાન અને ગણિતના પાઠ્યપુસ્તકો પાયો મજબૂત કરવા માટે શ્રેષ્ઠ છે.")
+    pdf.bullet("3. ડેઇલી કરંટ અફેર્સ: ", "રોજના અખબારો અને વર્તમાન પ્રવાહોની નિયમિત નોંધ રાખવાની ટેવ પાડો.")
+    pdf.bullet("4. ગણિત અને રિઝનિંગની પ્રેક્ટિસ: ", "રોજ ૧ કલાક શોર્ટ ટ્રીક્સ અને ઝડપી ગણતરીની પ્રેક્ટિસ કરો જેથી પેપરમાં સમય બચે.")
+    pdf.bullet("5. નિયમિત મોક ટેસ્ટ: ", "અઠવાડિયે ઓછામાં ઓછી ૧ ઓનલાઇન કે ઓફલાઇન મોક ટેસ્ટ આપો અને પોતાની ભૂલો સુધારો.")
 
-    return BytesIO(output)
+    try:
+        pdf_bytes = pdf.output()
+        if type(pdf_bytes) == str:
+            pdf_bytes = pdf_bytes.encode('latin1')
+    except TypeError:
+        pdf_bytes = pdf.output(dest='S').encode('latin1')
+        
+    buffer = BytesIO(pdf_bytes)
+    buffer.name = "Career_Guidance_Roadmap.pdf"
+    buffer.seek(0)
+    return buffer
 
+
+# ============================================================
+# DELIVERY (UPDATED TO USE PROFESSIONAL PDF)
+# ============================================================
 
 def send_purchase_success(
     user_id,
@@ -1238,13 +1416,13 @@ def send_purchase_success(
     coupon_code
 ):
     try:
-        pdf_file = generate_pdf()
+        pdf_file = generate_career_pdf()
         pdf_file.seek(0)
 
         bot.send_document(
             user_id,
             pdf_file,
-            visible_file_name="EduGuide_Career_Guide.pdf",
+            visible_file_name="Career_Guidance_Roadmap.pdf",
             caption=(
                 "✅ <b>Payment Successful</b>\n\n"
                 f"🎟️ તમારો Unique Coupon: "
@@ -1353,7 +1531,7 @@ def delivery_worker():
 
                 conn.commit()
 
-            finally:
+finally:
                 conn.close()
 
             for row in rows:
@@ -1732,8 +1910,6 @@ def buy_guide_handler(message):
         bot.send_message(
             user_id,
             "Payment link બનાવવામાં અત્યારે સમસ્યા છે. ફરી પ્રયાસ કરો."
-
-
         )
 
 
@@ -2681,7 +2857,6 @@ def razorpay_webhook():
             "Razorpay webhook processing failed"
         )
 
-        # Return 500 so Razorpay can retry webhook delivery.
         return jsonify({
             "ok": False
         }), 500
