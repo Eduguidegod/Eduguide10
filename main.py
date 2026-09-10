@@ -1531,7 +1531,7 @@ def delivery_worker():
 
                 conn.commit()
 
-finally:
+            finally:
                 conn.close()
 
             for row in rows:
